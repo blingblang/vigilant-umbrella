@@ -92,6 +92,7 @@ variable "grafana_password" {
 variable "alert_email" {
   description = "Email address for alerts"
   type        = string
+  default     = "alerts@example.com"  # Update this in Terraform Cloud variables
 }
 
 variable "slack_webhook_url" {
