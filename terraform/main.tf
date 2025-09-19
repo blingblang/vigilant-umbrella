@@ -141,6 +141,7 @@ locals {
     websites_to_monitor = var.websites_to_monitor
     enable_ssl         = var.enable_ssl
     domain_name        = var.domain_name
+    subdomain          = var.subdomain
     letsencrypt_email  = var.letsencrypt_email
   })
 }
