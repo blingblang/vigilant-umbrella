@@ -18,7 +18,8 @@ terraform {
 }
 
 provider "digitalocean" {
-  token = var.do_token
+  # Token is automatically read from DIGITALOCEAN_TOKEN environment variable
+  # or can be explicitly set via var.do_token
 }
 
 # Generate random password if not provided

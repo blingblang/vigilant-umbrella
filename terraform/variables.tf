@@ -1,7 +1,8 @@
 variable "do_token" {
-  description = "DigitalOcean API token"
+  description = "DigitalOcean API token (set via DIGITALOCEAN_TOKEN env var)"
   type        = string
   sensitive   = true
+  default     = ""
 }
 
 variable "project_name" {
