@@ -1,0 +1,7 @@
+.env
+nginx/htpasswd
+backups/
+*.log
+.DS_Store
+.vscode/
+.idea/

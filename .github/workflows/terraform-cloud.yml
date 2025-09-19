@@ -1,0 +1,113 @@
+name: Deploy via Terraform Cloud
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+      - 'docker-compose.yml'
+      - 'prometheus/**'
+      - 'alertmanager/**'
+      - 'grafana/**'
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+jobs:
+  terraform:
+    name: 'Terraform Cloud Deployment'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Format Check
+        id: fmt
+        run: terraform fmt -check
+        working-directory: ./terraform
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        working-directory: ./terraform
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        working-directory: ./terraform
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request' || github.event.inputs.action == 'plan'
+        run: terraform plan -no-color
+        working-directory: ./terraform
+        continue-on-error: true
+
+      - name: Update Pull Request
+        uses: actions/github-script@v6
+        if: github.event_name == 'pull_request'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+
+            <details><summary>Show Plan</summary>
+
+            \`\`\`terraform
+            ${{ steps.plan.outputs.stdout }}
+            \`\`\`
+
+            </details>
+
+            *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      - name: Terraform Apply
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event.inputs.action == 'apply'
+        run: terraform apply -auto-approve
+        working-directory: ./terraform
+
+      - name: Terraform Destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
+        working-directory: ./terraform
+
+      - name: Get Outputs
+        if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event.inputs.action == 'apply'
+        run: |
+          echo "## Deployment Outputs" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Droplet IP:** $(terraform output -raw droplet_ip)" >> $GITHUB_STEP_SUMMARY
+          echo "**Grafana URL:** $(terraform output -raw grafana_url)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To get the Grafana password, run:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "terraform output -raw grafana_password" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+        working-directory: ./terraform

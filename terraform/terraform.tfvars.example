@@ -1,0 +1,86 @@
+# DigitalOcean API Token (required)
+# Get from: https://cloud.digitalocean.com/account/api/tokens
+do_token = "your-digitalocean-api-token"
+
+# Project Configuration
+project_name = "my-monitoring"
+environment  = "production"
+
+# Droplet Configuration
+droplet_name = "observability-stack"
+region       = "nyc3"  # Options: nyc1, nyc3, sfo3, ams3, lon1, fra1, tor1, sgp1
+droplet_size = "s-2vcpu-4gb"  # $24/month - Recommended for production
+
+# SSH Configuration
+# Option 1: Provide path to your SSH public key
+# ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# Option 2: Use existing SSH keys from DigitalOcean
+# existing_ssh_key_ids = ["your-ssh-key-id"]
+
+# Security: Restrict SSH access (recommended for production)
+# ssh_allowed_ips = ["your.office.ip.address/32"]
+
+# Monitoring Access Control
+# Restrict who can access Grafana/Prometheus/Alertmanager
+# monitoring_allowed_ips = ["0.0.0.0/0"]  # Allow all (default)
+# monitoring_allowed_ips = ["your.office.ip.address/32"]  # Restrict to specific IPs
+
+# Expose additional services (not recommended for production)
+expose_prometheus   = false
+expose_alertmanager = false
+
+# Grafana Configuration
+# Leave empty to auto-generate a secure password
+# grafana_password = ""
+
+# Alert Configuration (required)
+alert_email = "your-email@example.com"
+
+# Slack Integration (optional)
+# slack_webhook_url = "https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+# SMTP Configuration for Email Alerts
+smtp_host     = "smtp.gmail.com:587"
+smtp_from     = "alerts@yourdomain.com"
+smtp_username = "your-email@gmail.com"
+smtp_password = "your-app-specific-password"
+
+# Websites to Monitor
+websites_to_monitor = [
+  {
+    url   = "https://example.com"
+    label = "Main Website"
+  },
+  {
+    url   = "https://api.example.com"
+    label = "API Endpoint"
+  },
+  {
+    url   = "https://app.example.com"
+    label = "Web Application"
+  }
+]
+
+# Networking
+use_reserved_ip = true  # Recommended for production
+
+# DNS Configuration (if you manage DNS in DigitalOcean)
+manage_dns  = false
+domain_name = "example.com"
+subdomain   = "monitoring"  # Will create monitoring.example.com
+
+# SSL Configuration with Let's Encrypt
+enable_ssl        = false
+letsencrypt_email = "admin@example.com"
+
+# Backup Configuration
+enable_backup_bucket  = false
+spaces_region        = "nyc3"
+backup_retention_days = 30
+
+# Project Management
+create_project = true
+
+# Additional Tags
+additional_tags = ["critical", "monitoring"]

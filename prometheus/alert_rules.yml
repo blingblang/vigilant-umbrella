@@ -1,0 +1,90 @@
+groups:
+  - name: system_alerts
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected on {{ $labels.instance }}"
+          description: "CPU usage is above 80% (current value: {{ $value }}%)"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% (current value: {{ $value }}%)"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Disk space is below 10% (current value: {{ $value }}%)"
+
+      - alert: NodeDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node {{ $labels.instance }} is down"
+          description: "{{ $labels.instance }} has been down for more than 1 minute"
+
+  - name: website_alerts
+    interval: 30s
+    rules:
+      - alert: WebsiteDown
+        expr: probe_success == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Website {{ $labels.instance }} is down"
+          description: "{{ $labels.instance }} has been unreachable for more than 1 minute"
+
+      - alert: SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon for {{ $labels.instance }}"
+          description: "SSL certificate for {{ $labels.instance }} will expire in less than 30 days"
+
+      - alert: SlowResponseTime
+        expr: probe_duration_seconds > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Slow response time for {{ $labels.instance }}"
+          description: "{{ $labels.instance }} is taking more than 2 seconds to respond (current: {{ $value }}s)"
+
+  - name: container_alerts
+    interval: 30s
+    rules:
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total[5m]) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} high CPU usage"
+          description: "Container {{ $labels.name }} CPU usage is above 80%"
+
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container {{ $labels.name }} high memory usage"
+          description: "Container {{ $labels.name }} memory usage is above 90%"
