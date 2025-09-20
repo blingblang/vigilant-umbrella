@@ -228,7 +228,7 @@ resource "digitalocean_project" "observability" {
 
   resources = concat(
     [digitalocean_droplet.observability.urn],
-    var.use_reserved_ip ? [digitalocean_reserved_ip.observability[0].urn] : [],
+    # Reserved IPs with attached droplets cannot be moved directly - they move with the droplet
     var.enable_backup_bucket ? [digitalocean_spaces_bucket.backups[0].urn] : []
   )
 }
