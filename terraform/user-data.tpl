@@ -19,60 +19,16 @@ chmod +x /usr/local/bin/docker-compose
 # Install required packages
 DEBIAN_FRONTEND=noninteractive apt-get install -y apache2-utils ufw certbot python3-certbot-nginx
 
-# Create directory structure
-mkdir -p /opt/observability-stack/{prometheus,alertmanager,grafana/provisioning/datasources,grafana/provisioning/dashboards,grafana/dashboards,blackbox,nginx}
-
+# Clone the complete repository instead of creating files manually
+cd /opt
+git clone https://github.com/blingblang/vigilant-umbrella.git observability-stack
 cd /opt/observability-stack
 
-# Write Docker Compose configuration
-cat > docker-compose.yml << 'COMPOSE_EOF'
-${docker_compose_yml}
-COMPOSE_EOF
-
-# Write Prometheus configuration
-cat > prometheus/prometheus.yml << 'PROM_EOF'
-${prometheus_yml}
-PROM_EOF
-
-# Add monitored websites to Prometheus config
+# The repository already contains all configuration files
+# Just add any custom websites to monitor
 %{ for website in websites_to_monitor ~}
-sed -i '/job_name: .blackbox-http/,/static_configs:/{/- targets:/a\          - ${website.url}' prometheus/prometheus.yml
+echo "  - ${website.url}" >> prometheus/websites.txt
 %{ endfor ~}
-
-# Write alert rules
-cat > prometheus/alert_rules.yml << 'RULES_EOF'
-${alert_rules_yml}
-RULES_EOF
-
-# Write Alertmanager configuration
-cat > alertmanager/alertmanager.yml << 'ALERT_EOF'
-${alertmanager_yml}
-ALERT_EOF
-
-# Write Blackbox configuration
-cat > blackbox/blackbox.yml << 'BLACK_EOF'
-${blackbox_yml}
-BLACK_EOF
-
-# Write Nginx configuration
-cat > nginx/nginx.conf << 'NGINX_EOF'
-${nginx_conf}
-NGINX_EOF
-
-# Write Grafana datasource provisioning
-cat > grafana/provisioning/datasources/prometheus.yml << 'DATASOURCE_EOF'
-${grafana_datasource}
-DATASOURCE_EOF
-
-# Write Grafana dashboard provisioning
-cat > grafana/provisioning/dashboards/dashboards.yml << 'DASHBOARDS_EOF'
-${grafana_dashboards}
-DASHBOARDS_EOF
-
-# Write Grafana dashboard
-cat > grafana/dashboards/system-overview.json << 'DASHBOARD_EOF'
-${grafana_dashboard_json}
-DASHBOARD_EOF
 
 # Create .env file
 cat > .env << ENV_EOF
@@ -95,6 +51,7 @@ ufw allow 9090/tcp
 ufw allow 9093/tcp
 ufw allow 9100/tcp
 ufw allow 9115/tcp
+ufw allow 8080/tcp
 ufw --force enable
 
 # Setup SSL if enabled

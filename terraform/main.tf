@@ -62,24 +62,39 @@ resource "digitalocean_firewall" "observability" {
     source_addresses = var.monitoring_allowed_ips
   }
 
-  # Prometheus (optional external access)
-  dynamic "inbound_rule" {
-    for_each = var.expose_prometheus ? [1] : []
-    content {
-      protocol         = "tcp"
-      port_range       = "9090"
-      source_addresses = var.monitoring_allowed_ips
-    }
+  # Prometheus - Always expose for monitoring access
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "9090"
+    source_addresses = var.monitoring_allowed_ips
   }
 
-  # Alertmanager (optional external access)
-  dynamic "inbound_rule" {
-    for_each = var.expose_alertmanager ? [1] : []
-    content {
-      protocol         = "tcp"
-      port_range       = "9093"
-      source_addresses = var.monitoring_allowed_ips
-    }
+  # Alertmanager - Always expose for monitoring access
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "9093"
+    source_addresses = var.monitoring_allowed_ips
+  }
+
+  # Node Exporter
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "9100"
+    source_addresses = var.monitoring_allowed_ips
+  }
+
+  # Blackbox Exporter
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "9115"
+    source_addresses = var.monitoring_allowed_ips
+  }
+
+  # cAdvisor
+  inbound_rule {
+    protocol         = "tcp"
+    port_range       = "8080"
+    source_addresses = var.monitoring_allowed_ips
   }
 
   # HTTP/HTTPS for nginx reverse proxy
