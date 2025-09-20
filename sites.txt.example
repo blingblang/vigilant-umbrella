@@ -1,0 +1,26 @@
+# Sites configuration for bulk migration
+# Format: name,host,node_port,app_port,app_path,environment
+#
+# Examples:
+# Basic site with node_exporter only
+site1,site1.example.com,9100,,,production
+
+# Site with both node and app metrics
+site2,site2.example.com,9100,8080,/metrics,production
+
+# Using private IP (DigitalOcean private networking)
+site3,10.132.0.2,9100,,,production
+
+# Staging environment with custom app metrics path
+site4-staging,staging.site4.com,9100,3000,/api/metrics,staging
+
+# Site with non-standard node_exporter port
+site5,site5.example.com,9200,,,production
+
+# Multiple apps on same host
+web-server,web.example.com,9100,8080,/metrics,production
+api-server,api.example.com,9100,8081,/api/metrics,production
+
+# Development sites
+dev1,dev1.internal,9100,3000,/metrics,development
+dev2,dev2.internal,9100,3001,/metrics,development
