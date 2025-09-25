@@ -1,0 +1,130 @@
+# Session-End Automation Configuration
+# Tool-agnostic configuration for automated updates
+
+version: 1.0
+enabled: true
+
+# Session mode: interactive, automatic, or dry-run
+mode: interactive
+
+# Components to update
+components:
+  - tests
+  - observability
+  - documentation
+
+# Validation settings
+validation:
+  require_tests_pass: true
+  min_coverage: 80
+  require_linting: true
+  run_tests: true
+  check_coverage: false
+  lint_code: true
+  validate_docs: true
+  security_scan: false
+
+# Rollback configuration
+rollback:
+  strategy: atomic  # atomic or progressive
+  preserve_manual_changes: true
+  max_retries: 3
+  backoff_seconds: 30
+
+# Test update settings
+tests:
+  create_missing: true
+  update_existing: true
+  generate_integration: true
+  test_frameworks:
+    - bash
+    - terraform
+
+# Observability settings
+observability:
+  update_prometheus: true
+  update_grafana: true
+  update_alertmanager: true
+  create_dashboards: true
+  auto_alerts: true
+  metrics_retention: 15d
+
+# Documentation settings
+documentation:
+  update_readme: true
+  update_guides: true
+  update_capabilities: true
+  generate_reports: true
+  report_format: markdown
+  include_metrics: true
+
+# Change detection thresholds
+thresholds:
+  min_changes_for_update: 1
+  max_files_per_session: 100
+  critical_path_patterns:
+    - "terraform/*.tf"
+    - "*.env*"
+    - "*secret*"
+    - "*password*"
+    - "*token*"
+
+# Notification settings (future enhancement)
+notifications:
+  enabled: false
+  channels: []
+
+# Hooks (scripts to run at various stages)
+hooks:
+  pre_update: null
+  post_update: null
+  on_failure: null
+  on_success: null
+
+# Paths (relative to project root)
+paths:
+  scripts: scripts/session-end
+  docs: docs
+  reports: docs/session-reports
+  tests: tests
+  terraform: terraform
+  monitoring:
+    prometheus: prometheus
+    grafana: grafana
+    alertmanager: alertmanager
+
+# Logging
+logging:
+  level: INFO  # DEBUG, INFO, WARNING, ERROR
+  file: .session-automation/session.log
+  max_size: 10MB
+  retention_days: 30
+
+# Exclusions
+exclude:
+  paths:
+    - node_modules
+    - .git
+    - vendor
+    - dist
+    - build
+    - target
+  patterns:
+    - "*.tmp"
+    - "*.log"
+    - "*.backup"
+    - ".DS_Store"
+
+# Performance
+performance:
+  parallel_execution: true
+  max_workers: 4
+  timeout_seconds: 600
+  cache_enabled: true
+
+# Feature flags
+features:
+  auto_commit: false
+  auto_push: false
+  create_pr: false
+  semantic_versioning: false
